@@ -1,12 +1,124 @@
+# Define paths and URLs
+$directory = 'C:\temp'
+$fileUrl = 'https://www.amyuni.com/downloads/usbmmidd_v2.zip'
+$filePath = Join-Path -Path $directory -ChildPath 'usmb.zip'
+$extractPath = Join-Path -Path $directory -ChildPath 'usbmmidd_v2'
+$batFile = Join-Path -Path $extractPath -ChildPath 'usbmmidd.bat'
+
 # Funções
+
 function Opcao1 {
-    Write-Host "Executando a função da Opção 1..."
-    # Adicione o código da função aqui
+    Write-Host "Executando a função de instalar Segunda Tela"
+
+# Create directory if it doesn't exist
+if (-not (Test-Path -Path $directory)) {
+    New-Item -ItemType Directory -Path $directory -Force | Out-Null
+}
+
+try {
+    # Verifica se o diretório já está nas exclusões do Windows Defender
+    $exclusionPaths = Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
+    if (-not ($exclusionPaths -contains $directory)) {
+        Add-MpPreference -ExclusionPath $directory
+        Write-Host "Diretório adicionado às exclusões do Windows Defender: $directory"
+    } else {
+        Write-Host "O diretório já está nas exclusões do Windows Defender."
+    }
+} catch {
+    Write-Host "Erro ao adicionar o diretório às exclusões do antivírus: $_"
+}
+
+
+# Download the file if it doesn't already exist
+if (-not (Test-Path -Path $filePath)) {
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, 
+                                                        [Net.SecurityProtocolType]::Tls11, 
+                                                        [Net.SecurityProtocolType]::Tls, 
+                                                        [Net.SecurityProtocolType]::Ssl3
+        Invoke-WebRequest -Uri $fileUrl -OutFile $filePath -UseBasicParsing
+    } catch {
+        Write-Host "Erro ao baixar o arquivo: $_"
+        exit 1
+    }
+}
+
+# Extract the file if the download was successful
+if (Test-Path -Path $filePath) {
+    if (-not (Test-Path -Path $extractPath)) {
+        try {
+            Expand-Archive -Path $filePath -DestinationPath $directory -Force
+        } catch {
+            Write-Host "Erro ao extrair o arquivo: $_"
+            exit 1
+        }
+    }
+
+    # Navigate to the extracted directory
+    Set-Location -Path $extractPath
+
+    # Run the .bat file if it exists
+    if (Test-Path -Path $batFile) {
+        try {
+            Start-Process -FilePath $batFile -Wait
+        } catch {
+            Write-Host "Erro ao executar o arquivo .bat: $_"
+        }
+    } else {
+        Write-Host 'Arquivo usbmmidd.bat não encontrado.'
+    }
+
+    # Locate the correct device installer
+    $deviceInstaller32 = Join-Path -Path $extractPath -ChildPath 'deviceinstaller.exe'
+    $deviceInstaller64 = Join-Path -Path $extractPath -ChildPath 'deviceinstaller64.exe'
+    $deviceInstaller = if ([Environment]::Is64BitOperatingSystem -and (Test-Path -Path $deviceInstaller64)) {
+                            $deviceInstaller64 
+                       } elseif (Test-Path -Path $deviceInstaller32) {
+                            $deviceInstaller32 
+                       } else {
+                            $null 
+                       }
+
+    # Run the device installer if available
+    if ($deviceInstaller) {
+        try {
+            Start-Process -FilePath $deviceInstaller -ArgumentList 'enableidd 1' -Wait
+        } catch {
+            Write-Host "Erro ao executar o instalador do dispositivo: $_"
+        }
+    } else {
+        Write-Host 'Arquivo do instalador do dispositivo não encontrado.'
+    }
+} else {
+    Write-Host 'Falha ao baixar usmb.zip'
+}
+
 }
 
 function Opcao2 {
-    Write-Host "Executando a função da Opção 2..."
+    Write-Host "Desabilitando Segunda tela"
     # Adicione o código da função aqui
+
+    $deviceInstaller32 = Join-Path -Path $extractPath -ChildPath 'deviceinstaller.exe'
+    $deviceInstaller64 = Join-Path -Path $extractPath -ChildPath 'deviceinstaller64.exe'
+    $deviceInstaller = if ([Environment]::Is64BitOperatingSystem -and (Test-Path -Path $deviceInstaller64)) {
+                            $deviceInstaller64 
+                       } elseif (Test-Path -Path $deviceInstaller32) {
+                            $deviceInstaller32 
+                       } else {
+                            $null 
+                       }
+
+    # Run the device installer if available
+    if ($deviceInstaller) {
+        try {
+            Start-Process -FilePath $deviceInstaller -ArgumentList 'enableidd 0' -Wait
+        } catch {
+            Write-Host "Erro ao executar o instalador do dispositivo: $_"
+        }
+    } else {
+        Write-Host 'Arquivo do instalador do dispositivo não encontrado.'
+    }
 }
 
 function Opcao3 {
@@ -19,11 +131,14 @@ function Sair {
     exit
 }
 
-# Função para exibir o menu em uma linha
+# Função para exibir o menu
 function ExibirMenu {
     Clear-Host
     Write-Host "==== MENU ===="
-    Write-Host "1. Opção 1 | 2. Opção 2 | 3. Opção 3 | 4. Sair"
+    Write-Host "1. Opção 1"
+    Write-Host "2. Opção 2"
+    Write-Host "3. Opção 3"
+    Write-Host "4. Sair"
     Write-Host "================="
 }
 
