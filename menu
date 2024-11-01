@@ -1,0 +1,48 @@
+# Funções
+function Opcao1 {
+    Write-Host "Executando a função da Opção 1..."
+    # Adicione o código da função aqui
+}
+
+function Opcao2 {
+    Write-Host "Executando a função da Opção 2..."
+    # Adicione o código da função aqui
+}
+
+function Opcao3 {
+    Write-Host "Executando a função da Opção 3..."
+    # Adicione o código da função aqui
+}
+
+function Sair {
+    Write-Host "Saindo do programa..."
+    exit
+}
+
+# Função para exibir o menu
+function ExibirMenu {
+    Clear-Host
+    Write-Host "==== MENU ===="
+    Write-Host "1. Opção 1"
+    Write-Host "2. Opção 2"
+    Write-Host "3. Opção 3"
+    Write-Host "4. Sair"
+    Write-Host "================="
+}
+
+# Loop do menu
+do {
+    ExibirMenu
+    $escolha = Read-Host "Selecione uma opção"
+
+    switch ($escolha) {
+        "1" { Opcao1 }
+        "2" { Opcao2 }
+        "3" { Opcao3 }
+        "4" { Sair }
+        default { Write-Host "Opção inválida, tente novamente." }
+    }
+
+    Write-Host "`nPressione Enter para continuar..."
+    Read-Host
+} while ($true)
