@@ -1,3 +1,28 @@
+cls
+
+# Funções
+
+
+function Funcao1 {
+    Write-Host "Executando a Função 1..." -ForegroundColor Cyan
+    # Código específico para a Função 1
+}
+
+function Funcao2 {
+    Write-Host "Executando a Função 2..." -ForegroundColor Green
+    # Código específico para a Função 2
+}
+
+function Funcao3 {
+    Write-Host "Executando a Função 3..." -ForegroundColor Yellow
+    # Código específico para a Função 3
+}
+
+function Sair {
+    Write-Host "Saindo do programa..." -ForegroundColor Red
+    exit
+}
+
 # Função para exibir o banner
 function ExibirBanner {
     Write-Host ""
@@ -6,10 +31,6 @@ function ExibirBanner {
     Write-Host " | || '_ \/ __| |/ _` |/ _ \| |/ _ \/ _` | '_ ` _ \ " -ForegroundColor Green
     Write-Host " | || | | \__ \ | (_| |  __/| |  __/ (_| | | | | | |" -ForegroundColor Green
     Write-Host "|___|_| |_|___/_|\__,_|\___||_|\___|\__,_|_| |_| |_|" -ForegroundColor Green
-    Write-Host " / ___|___  _ __ ___   __ _ _ __   __| | ___  ___   " -ForegroundColor Green
-    Write-Host "| |   / _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \/ __|  " -ForegroundColor Green
-    Write-Host "| |__| (_) | | | | | | (_| | | | | (_| | (_) \__ \  " -ForegroundColor Green
-    Write-Host " \____\___/|_| |_| |_|\__,_|_| |_|\__,_|\___/|___/  " -ForegroundColor Green
     Write-Host ""
 
 }
