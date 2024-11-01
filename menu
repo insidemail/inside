@@ -1,166 +1,43 @@
-# Define paths and URLs
-$directory = 'C:\temp'
-$fileUrl = 'https://www.amyuni.com/downloads/usbmmidd_v2.zip'
-$filePath = Join-Path -Path $directory -ChildPath 'usmb.zip'
-$extractPath = Join-Path -Path $directory -ChildPath 'usbmmidd_v2'
-$batFile = Join-Path -Path $extractPath -ChildPath 'usbmmidd.bat'
+# Função para exibir o banner
+function ExibirBanner {
+    Write-Host ""
+    Write-Host " ___           _     _     _____                    " -ForegroundColor Green
+    Write-Host "|_ _|_ __  ___(_) __| | __|_   _|__  __ _ _ __ ___  " -ForegroundColor Green
+    Write-Host " | || '_ \/ __| |/ _` |/ _ \| |/ _ \/ _` | '_ ` _ \ " -ForegroundColor Green
+    Write-Host " | || | | \__ \ | (_| |  __/| |  __/ (_| | | | | | |" -ForegroundColor Green
+    Write-Host "|___|_| |_|___/_|\__,_|\___||_|\___|\__,_|_| |_| |_|" -ForegroundColor Green
+    Write-Host " / ___|___  _ __ ___   __ _ _ __   __| | ___  ___   " -ForegroundColor Green
+    Write-Host "| |   / _ \| '_ ` _ \ / _` | '_ \ / _` |/ _ \/ __|  " -ForegroundColor Green
+    Write-Host "| |__| (_) | | | | | | (_| | | | | (_| | (_) \__ \  " -ForegroundColor Green
+    Write-Host " \____\___/|_| |_| |_|\__,_|_| |_|\__,_|\___/|___/  " -ForegroundColor Green
+    Write-Host ""
 
-# Funções
-
-function Opcao1 {
-    Write-Host "Executando a função de instalar Segunda Tela"
-
-    # Cria o diretório, se não existir
-    if (-not (Test-Path -Path $directory)) {
-        New-Item -ItemType Directory -Path $directory -Force | Out-Null
-    }
-
-    # Verifica e adiciona exclusão no Windows Defender
-    try {
-        # Verifica se o módulo do Windows Defender está acessível
-        if (-not (Get-Command -Name Get-MpPreference -ErrorAction SilentlyContinue)) {
-            Write-Host "O módulo de segurança do Windows Defender não está disponível neste sistema."
-            return
-        }
-
-        # Obtém os caminhos de exclusão e verifica se $directory já está incluído
-        $exclusionPaths = Get-MpPreference | Select-Object -ExpandProperty ExclusionPath
-        if (-not ($exclusionPaths -contains $directory)) {
-            Add-MpPreference -ExclusionPath $directory
-            Write-Host "Diretório adicionado às exclusões do Windows Defender: $directory"
-        } else {
-            Write-Host "O diretório já está nas exclusões do Windows Defender."
-        }
-    } catch {
-        Write-Host "Erro ao adicionar o diretório às exclusões do antivírus: $_"
-    }
-
-    # Download do arquivo, se ainda não existir
-    if (-not (Test-Path -Path $filePath)) {
-        Write-Host "Baixando o arquivo..."
-        try {
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12, 
-                                                            [Net.SecurityProtocolType]::Tls11, 
-                                                            [Net.SecurityProtocolType]::Tls, 
-                                                            [Net.SecurityProtocolType]::Ssl3
-            Invoke-WebRequest -Uri $fileUrl -OutFile $filePath -UseBasicParsing
-        } catch {
-            Write-Host "Erro ao baixar o arquivo: $_"
-            exit 1
-        }
-    }
-
-    # Extrai o arquivo, se o download foi bem-sucedido
-    if (Test-Path -Path $filePath) {
-        if (-not (Test-Path -Path $extractPath)) {
-            try {
-                Write-Host "Extraindo o arquivo..."
-                Expand-Archive -Path $filePath -DestinationPath $directory -Force
-            } catch {
-                Write-Host "Erro ao extrair o arquivo: $_"
-                exit 1
-            }
-        }
-
-        # Navega para o diretório extraído e executa o .bat, se existir
-        Set-Location -Path $extractPath
-
-        if (Test-Path -Path $batFile) {
-            try {
-                Start-Process -FilePath $batFile -Wait
-            } catch {
-                Write-Host "Erro ao executar o arquivo .bat: $_"
-            }
-        } else {
-            Write-Host 'Arquivo usbmmidd.bat não encontrado.'
-        }
-
-        # Localiza o instalador de dispositivo correto
-        $deviceInstaller32 = Join-Path -Path $extractPath -ChildPath 'deviceinstaller.exe'
-        $deviceInstaller64 = Join-Path -Path $extractPath -ChildPath 'deviceinstaller64.exe'
-        $deviceInstaller = if ([Environment]::Is64BitOperatingSystem -and (Test-Path -Path $deviceInstaller64)) {
-                                $deviceInstaller64 
-                           } elseif (Test-Path -Path $deviceInstaller32) {
-                                $deviceInstaller32 
-                           } else {
-                                $null 
-                           }
-
-        # Executa o instalador de dispositivo, se disponível
-        if ($deviceInstaller) {
-            try {
-                Start-Process -FilePath $deviceInstaller -ArgumentList 'enableidd 1' -Wait
-            } catch {
-                Write-Host "Erro ao executar o instalador do dispositivo: $_"
-            }
-        } else {
-            Write-Host 'Arquivo do instalador do dispositivo não encontrado.'
-        }
-    } else {
-        Write-Host 'Falha ao baixar usmb.zip'
-    }
-}
-
-function Opcao2 {
-    Write-Host "Desabilitando Segunda tela"
-    # Código para desabilitar segunda tela
-
-    $deviceInstaller32 = Join-Path -Path $extractPath -ChildPath 'deviceinstaller.exe'
-    $deviceInstaller64 = Join-Path -Path $extractPath -ChildPath 'deviceinstaller64.exe'
-    $deviceInstaller = if ([Environment]::Is64BitOperatingSystem -and (Test-Path -Path $deviceInstaller64)) {
-                            $deviceInstaller64 
-                       } elseif (Test-Path -Path $deviceInstaller32) {
-                            $deviceInstaller32 
-                       } else {
-                            $null 
-                       }
-
-    # Executa o instalador de dispositivo, se disponível
-    if ($deviceInstaller) {
-        try {
-            Start-Process -FilePath $deviceInstaller -ArgumentList 'enableidd 0' -Wait
-        } catch {
-            Write-Host "Erro ao executar o instalador do dispositivo: $_"
-        }
-    } else {
-        Write-Host 'Arquivo do instalador do dispositivo não encontrado.'
-    }
-}
-
-function Opcao3 {
-    Write-Host "Executando a função da Opção 3..."
-    # Adicione o código da função aqui
-}
-
-function Sair {
-    Write-Host "Saindo do programa..."
-    exit
 }
 
 # Função para exibir o menu
 function ExibirMenu {
-    Clear-Host
-    Write-Host "==== MENU ===="
-    Write-Host "1. Opção 1"
-    Write-Host "2. Opção 2"
-    Write-Host "3. Opção 3"
-    Write-Host "4. Sair"
-    Write-Host "================="
+    ExibirBanner
+    Write-Host "==== MENU DE FUNÇÕES ====" -ForegroundColor White
+    Write-Host "1. Executar Função 1" -ForegroundColor Cyan
+    Write-Host "2. Executar Função 2" -ForegroundColor Green
+    Write-Host "3. Executar Função 3" -ForegroundColor Yellow
+    Write-Host "4. Sair" -ForegroundColor Red
+    Write-Host "==========================" -ForegroundColor White
 }
 
 # Loop do menu
 do {
     ExibirMenu
-    $escolha = Read-Host "Selecione uma opção"
+    $escolha = Read-Host "Selecione uma opção (1-4)"
 
     switch ($escolha) {
-        "1" { Opcao1 }
-        "2" { Opcao2 }
-        "3" { Opcao3 }
+        "1" { Funcao1 }
+        "2" { Funcao2 }
+        "3" { Funcao3 }
         "4" { Sair }
-        default { Write-Host "Opção inválida, tente novamente." }
+        default { Write-Host "Opção inválida, tente novamente." -ForegroundColor DarkRed }
     }
 
-    Write-Host "`nPressione Enter para continuar..."
+    Write-Host "`nPressione Enter para continuar..." -ForegroundColor Gray
     Read-Host
 } while ($true)
