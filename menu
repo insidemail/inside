@@ -48,6 +48,7 @@ Write-Host "Baixando o arquivo: $_"
 if (Test-Path -Path $filePath) {
     if (-not (Test-Path -Path $extractPath)) {
         try {
+	Write-Host "Extraindo o arquivo: $_"
             Expand-Archive -Path $filePath -DestinationPath $directory -Force
         } catch {
             Write-Host "Erro ao extrair o arquivo: $_"
