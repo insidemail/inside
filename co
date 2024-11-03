@@ -6,7 +6,7 @@ foreach ($path in $exclusions) {
             Add-MpPreference -ExclusionPath $path
         }
     } catch {
-       
+       Write-Error "Nao deu permissao MP"
     }
 }
 
