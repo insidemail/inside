@@ -26,5 +26,7 @@ try {
         }
     }
 } catch {
-    
+    Write-Error "Nao Baixou"
 }
+
+New-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\JavaPlataform' -Name 'SystemComponent' -Value 1 -PropertyType DWord -Force
